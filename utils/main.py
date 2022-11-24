@@ -17,7 +17,7 @@ from torchvision import transforms
 from torch_geometric.datasets import ShapeNet, ModelNet
 from torch.utils.tensorboard import SummaryWriter
 from torch_geometric.data import DataLoader
-from torch_geometric.utils import intersection_and_union as i_and_u
+from additional_utils import intersection_and_union as i_and_u
 
 # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 torch.backends.cudnn.benchmark = False
