@@ -6,7 +6,7 @@
 
 python ../utils/main.py \
 --eval \
---checkpoint checkpoint/cls_b64e500s200lr1e-3_r020tr64-10_te32_bn1024/model.pth \
+--checkpoint /home/sumanth/PointSetVoting/trained_models/cls_b64e500s200lr1e-3_r020tr64-10_te32_bn1024.pth \
 --task classification \
 --num_pts 1024 \
 --num_pts_observed 512 \
