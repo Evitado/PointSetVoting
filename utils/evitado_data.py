@@ -23,14 +23,19 @@ class EvitadoDataset(InMemoryDataset):
 
     @property
     def raw_file_names(self):
-        return ['737_500','737_800',
-                '747_400','757_200',
-                '767_300','777_200',
-                '777_300','a330_300']
+        return [
+                '737_500',
+                '737_800',
+                '747_400',
+                '757_200',
+                '767_300',
+                '777_200',
+                '777_300',
+                'a330_300']
 
     @property
     def processed_file_names(self):
-        return ['train.pt,test.pt']
+        return ['train.pt','test.pt']
 
     def process(self):
         torch.save(self.process_set('train'), self.processed_paths[0])
@@ -58,8 +63,10 @@ class EvitadoDataset(InMemoryDataset):
         if self.pre_transform is not None:
             data_list = [self.pre_transform(d) for d in data_list]
             
-        import ipdb; ipdb.set_trace()
         return self.collate(data_list)
+    
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}{self.name}({len(self)})'
 
         
 EvitadoDataset(root='../data_root/evitado_data')
