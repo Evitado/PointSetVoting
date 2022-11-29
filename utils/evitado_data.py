@@ -3,12 +3,23 @@ import glob
 import os
 import open3d as o3d
 import numpy as np
-from torch_geometric.data import Dataset, download_url
+from torch_geometric.data import Dataset, InMemoryDataset
+from torch_geometric.io import read_ply
 
 
-class EvitadoDataset(Dataset):
-    def __init__(self, root, transform=None, pre_transform=None, pre_filter=None):
+class EvitadoDataset(InMemoryDataset):
+    def __init__(
+        self,
+        root,
+        train = True,
+        transform= None,
+        pre_transform= None,
+        pre_filter= None
+    ):
         super().__init__(root, transform, pre_transform, pre_filter)
+        path = self.processed_paths[0] if train else self.processed_paths[1]
+        self.data, self.slices = torch.load(path)
+
 
     @property
     def raw_file_names(self):
@@ -31,11 +42,13 @@ class EvitadoDataset(Dataset):
         
         data_list = []
         for target, category in enumerate(categories):
+            print(target, category)
             folder = os.path.join(self.raw_dir,category,dataset)
-            paths = glob.glob(f'{folder}/{category}*.pcd')
+            paths = glob.glob(f'{folder}/{category}*.ply')
             for path in paths:
-                pcd = o3d.io.read_point_cloud(path)
-                data = torch.from_numpy(np.asarray(pcd.points))
+                # pcd = o3d.io.read_point_cloud(path)
+                # data = torch.from_numpy(np.asarray(pcd.points))
+                data = read_ply(path)
                 data.y = torch.tensor([target])
                 data_list.append(data)
                 
@@ -45,6 +58,7 @@ class EvitadoDataset(Dataset):
         if self.pre_transform is not None:
             data_list = [self.pre_transform(d) for d in data_list]
             
+        import ipdb; ipdb.set_trace()
         return self.collate(data_list)
 
         
