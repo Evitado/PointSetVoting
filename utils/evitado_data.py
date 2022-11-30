@@ -1,9 +1,7 @@
 import torch
 import glob
 import os
-import open3d as o3d
-import numpy as np
-from torch_geometric.data import Dataset, InMemoryDataset
+from torch_geometric.data import  InMemoryDataset
 from torch_geometric.io import read_ply
 
 
@@ -69,4 +67,4 @@ class EvitadoDataset(InMemoryDataset):
         return f'{self.__class__.__name__}{self.name}({len(self)})'
 
         
-EvitadoDataset(root='../data_root/evitado_data')
+# EvitadoDataset(root='../data_root/evitado_data', transform=1024)
