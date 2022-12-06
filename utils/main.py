@@ -18,7 +18,7 @@ from torch_geometric.datasets import ShapeNet, ModelNet
 from torch.utils.tensorboard import SummaryWriter
 from torch_geometric.data import DataLoader
 from additional_utils import intersection_and_union as i_and_u
-
+from evitado_data import EvitadoDataset
 # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True
@@ -37,7 +37,7 @@ def train_one_epoch(args, loader, optimizer, logger, epoch):
     model.train()
     loss_summary = {}
     global i
-
+    import ipdb; ipdb.set_trace()
     for j, data in enumerate(loader, 0):
         data = data.to(device)
         pos, batch = data.pos, data.batch
@@ -151,15 +151,17 @@ def train(args, train_dataloader, test_dataloader):
     for epoch in range(1, args.max_epoch+1):
         # do training
         # with torch.autograd.detect_anomaly():
+        import ipdb; ipdb.set_trace()
         train_one_epoch(args, train_dataloader, optimizer, logger, epoch)
+        
         # reduce learning rate
         scheduler.step()
         # validation
-        acc_ = test_one_epoch(args, test_dataloader, logger, epoch)
-        if acc_ > acc:
-            # save model
-            torch.save(model.state_dict(), os.path.join(check_dir, 'model.pth'))
-            acc = acc_
+        # acc_ = test_one_epoch(args, test_dataloader, logger, epoch)
+        # if acc_ > acc:
+        #     # save model
+        #     torch.save(model.state_dict(), os.path.join(check_dir, 'model.pth'))
+        #     acc = acc_
 
 
 def evaluate(args, loader, save_dir):
@@ -293,9 +295,9 @@ def load_dataset(args):
     elif args.task == 'classification':
         pre_transform, transform = augment_transforms(args)
 
-        train_dataset = ModelNet('../data_root/ModelNet40', name='40', train=True,
+        train_dataset = EvitadoDataset('../data_root/evitado_data', train=True,
                                  pre_transform=pre_transform, transform=transform)
-        test_dataset = ModelNet('../data_root/ModelNet40', name='40', train=False,
+        test_dataset = EvitadoDataset('../data_root/evitado_data', train=False,
                                  pre_transform=pre_transform, transform=T.SamplePoints(args.num_pts))
         train_dataloader = DataLoader(train_dataset, batch_size=args.bsize, shuffle=True,
                                       num_workers=6, drop_last=True)
@@ -312,9 +314,9 @@ def load_dataset(args):
         test_dataset = completion3D_class('../data_root/completion3D', categories, split='val',
                             include_normals=False, pre_transform=pre_transform, transform=transform)
         train_dataloader = DataLoader(train_dataset, batch_size=args.bsize, shuffle=True,
-                                      num_workers=6, drop_last=True)
+                                      num_workers=2, drop_last=True)
         test_dataloader = DataLoader(test_dataset, batch_size=args.bsize, shuffle=False,
-                                     num_workers=6, drop_last=True)
+                                     num_workers=2, drop_last=True)
 
     return train_dataloader, test_dataloader
 

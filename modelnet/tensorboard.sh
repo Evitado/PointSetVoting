@@ -1,2 +1,2 @@
 #! /bin/bash
-tensorboard --logdir=./logs --port=6006 --bind_all
+tensorboard --logdir=/home/sumanth/PointSetVoting/tensorboard/logs --port=6006 --bind_all

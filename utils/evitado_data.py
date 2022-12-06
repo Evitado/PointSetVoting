@@ -17,6 +17,7 @@ class EvitadoDataset(InMemoryDataset):
         super().__init__(root, transform, pre_transform, pre_filter)
         path = self.processed_paths[0] if train else self.processed_paths[1]
         self.data, self.slices = torch.load(path)
+        # self.data = torch.load(path)
 
 
     @property
@@ -48,6 +49,7 @@ class EvitadoDataset(InMemoryDataset):
             print(target, category)
             folder = os.path.join(self.raw_dir,category,dataset)
             paths = glob.glob(f'{folder}/{category}*.ply')
+            import ipdb; ipdb.set_trace()
             for path in paths:
                 # pcd = o3d.io.read_point_cloud(path)
                 # data = torch.from_numpy(np.asarray(pcd.points))
@@ -59,12 +61,30 @@ class EvitadoDataset(InMemoryDataset):
             data_list = [d for d in data_list if self.pre_filter(d)]
 
         if self.pre_transform is not None:
+            import ipdb; ipdb.set_trace()
             data_list = [self.pre_transform(d) for d in data_list]
             
         return self.collate(data_list)
     
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}{self.name}({len(self)})'
+        return f'{self.__class__.__name__}({len(self)})'
 
         
 # EvitadoDataset(root='../data_root/evitado_data', transform=1024)
+train_dataset = EvitadoDataset('../data_root/evitado_data', train=True,
+                                 pre_transform=T.NormalizeScale(), transform=False)
+
+import ipdb; ipdb.set_trace()
+
+# test_dataset = EvitadoDataset('../data_root/evitado_data', train=False,
+                                #  pre_transform=pre_transform, transform=T.SamplePoints(1024))
+        
+train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True,
+                                      num_workers=6, drop_last=True)
+
+import ipdb; ipdb.set_trace()   
+        # test_dataloader = DataLoader(test_dataset, batch_size=args.bsize, shuffle=False,
+                                    #  num_workers=6, drop_last=True)
+# import ipdb; ipdb.set_trace()                                       
+for b in train_dataloader:
+    print(b)
