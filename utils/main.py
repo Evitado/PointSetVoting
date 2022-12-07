@@ -33,7 +33,6 @@ def train_one_epoch(args, loader, optimizer, logger, epoch):
     both the input and label for the point cloud completion task. While partial
     point clouds (data.y) are loaded at testing.
     '''
-
     model.train()
     loss_summary = {}
     global i
@@ -45,7 +44,7 @@ def train_one_epoch(args, loader, optimizer, logger, epoch):
 
         # training
         model.zero_grad()
-        import ipdb; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
         pred, loss = model(None, pos, batch, category, label)
         loss = loss.mean()
 
@@ -70,10 +69,10 @@ def train_one_epoch(args, loader, optimizer, logger, epoch):
 
 def test_one_epoch(args, loader, logger, epoch):
 
+    # import ipdb; ipdb.set_trace()
     model.eval()
     results = []
     intersections, unions, categories = [], [], []
-
     for j, data in enumerate(loader, 0):
         data = data.to(device)
         pos, batch, label = data.pos, data.batch, data.y
@@ -151,17 +150,18 @@ def train(args, train_dataloader, test_dataloader):
     for epoch in range(1, args.max_epoch+1):
         # do training
         # with torch.autograd.detect_anomaly():
-        import ipdb; ipdb.set_trace()
+        
         train_one_epoch(args, train_dataloader, optimizer, logger, epoch)
         
         # reduce learning rate
         scheduler.step()
         # validation
-        # acc_ = test_one_epoch(args, test_dataloader, logger, epoch)
-        # if acc_ > acc:
-        #     # save model
-        #     torch.save(model.state_dict(), os.path.join(check_dir, 'model.pth'))
-        #     acc = acc_
+        
+        acc_ = test_one_epoch(args, test_dataloader, logger, epoch)
+        if acc_ > acc:
+            # save model
+            torch.save(model.state_dict(), os.path.join(check_dir, 'model.pth'))
+            acc = acc_
 
 
 def evaluate(args, loader, save_dir):
@@ -431,6 +431,7 @@ if __name__ == '__main__':
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
+    model.to(dtype=torch.float64)
     if torch.cuda.device_count() > 1:
         print("Let's use", torch.cuda.device_count(), "GPUs!")
     model = torch.nn.DataParallel(model)

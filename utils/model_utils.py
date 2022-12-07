@@ -25,6 +25,7 @@ def simulate_partial_point_clouds(data, npts, task):
     """
     Simulate partial point clouds.
     """
+    # import ipdb; ipdb.set_trace()
     pos, batch, label = data.pos, data.batch, data.y
 
     bsize = batch.max() + 1
@@ -37,7 +38,7 @@ def simulate_partial_point_clouds(data, npts, task):
     for i in range(pos.size(0)):
         while True:
             # define a plane by its normal and it goes through the origin
-            vec = torch.randn(3).to(pos.device)
+            vec = torch.randn(3,  dtype= torch.double).to(pos.device)
             # mask out half side of points
             mask = pos[i].matmul(vec) > 0
             p = pos[i][mask]
