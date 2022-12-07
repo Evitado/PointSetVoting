@@ -37,7 +37,6 @@ def train_one_epoch(args, loader, optimizer, logger, epoch):
     model.train()
     loss_summary = {}
     global i
-    import ipdb; ipdb.set_trace()
     for j, data in enumerate(loader, 0):
         data = data.to(device)
         pos, batch = data.pos, data.batch
@@ -46,6 +45,7 @@ def train_one_epoch(args, loader, optimizer, logger, epoch):
 
         # training
         model.zero_grad()
+        import ipdb; ipdb.set_trace()
         pred, loss = model(None, pos, batch, category, label)
         loss = loss.mean()
 
@@ -314,9 +314,9 @@ def load_dataset(args):
         test_dataset = completion3D_class('../data_root/completion3D', categories, split='val',
                             include_normals=False, pre_transform=pre_transform, transform=transform)
         train_dataloader = DataLoader(train_dataset, batch_size=args.bsize, shuffle=True,
-                                      num_workers=2, drop_last=True)
+                                      num_workers=4, drop_last=True)
         test_dataloader = DataLoader(test_dataset, batch_size=args.bsize, shuffle=False,
-                                     num_workers=2, drop_last=True)
+                                     num_workers=4, drop_last=True)
 
     return train_dataloader, test_dataloader
 

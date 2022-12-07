@@ -55,9 +55,10 @@ class EvitadoDataset(InMemoryDataset):
             paths = glob.glob(f'{folder}/{category}*.ply')
             for path in paths:                                       
                 pcd = o3d.io.read_point_cloud(path)
-                pos = torch.from_numpy(np.asarray(pcd.points))
+                pos = torch.from_numpy(np.asarray(pcd.points)) 
+                # print((pos.dtype))
                 # data = read_ply(path)
-                data = Data(pos=pos, face=None)
+                data = Data(pos=pos.double(), face=None)
                 data.y = torch.tensor([target])
                 data_list.append(data)
                 
@@ -65,7 +66,6 @@ class EvitadoDataset(InMemoryDataset):
             data_list = [d for d in data_list if self.pre_filter(d)]
 
         if self.pre_transform is not None:
-            import ipdb; ipdb.set_trace()
             data_list = [self.pre_transform(d) for d in data_list]
             
         return self.collate(data_list)

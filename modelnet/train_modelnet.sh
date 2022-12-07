@@ -7,7 +7,7 @@ python ../utils/main.py \
 --lr 0.001 \
 --step_size 200 \
 --max_epoch 500 \
---bsize 64 \
+--bsize 3 \
 --radius 0.20 \
 --bottleneck 1024 \
 --num_vote_train 64 \
