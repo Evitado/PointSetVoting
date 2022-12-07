@@ -1,7 +1,8 @@
 import torch
 import glob
 import os
-from torch_geometric.data import  InMemoryDataset, DataLoader
+from torch_geometric.data import  InMemoryDataset, Batch
+from torch_geometric.loader import  DataLoader
 from torch_geometric.io import read_ply
 import torch_geometric.transforms as T
 
@@ -50,8 +51,7 @@ class EvitadoDataset(InMemoryDataset):
             print(target, category)
             folder = os.path.join(self.raw_dir,category,dataset)
             paths = glob.glob(f'{folder}/{category}*.ply')
-            import ipdb; ipdb.set_trace()
-            for path in paths:
+            for path in paths:                                       
                 # pcd = o3d.io.read_point_cloud(path)
                 # data = torch.from_numpy(np.asarray(pcd.points))
                 data = read_ply(path)
@@ -71,21 +71,23 @@ class EvitadoDataset(InMemoryDataset):
         return f'{self.__class__.__name__}({len(self)})'
 
         
-# EvitadoDataset(root='../data_root/evitado_data', transform=1024)
-train_dataset = EvitadoDataset('../data_root/evitado_data', train=True,
-                                 pre_transform=T.NormalizeScale(), transform=False)
+# # EvitadoDataset(root='../data_root/evitado_data', transform=1024)
+train_dataset = EvitadoDataset('../data_root/evitado_data', train=True, pre_transform=T.NormalizeScale(),transform=1024)
 
 import ipdb; ipdb.set_trace()
 
-# test_dataset = EvitadoDataset('../data_root/evitado_data', train=False,
-                                #  pre_transform=pre_transform, transform=T.SamplePoints(1024))
+# # test_dataset = EvitadoDataset('../data_root/evitado_data', train=False,
+#                                 #  pre_transform=pre_transform, transform=T.SamplePoints(1024))
         
-train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True,
-                                      num_workers=6, drop_last=True)
+train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True, num_workers=1, drop_last=True)
 
 import ipdb; ipdb.set_trace()   
-        # test_dataloader = DataLoader(test_dataset, batch_size=args.bsize, shuffle=False,
-                                    #  num_workers=6, drop_last=True)
-# import ipdb; ipdb.set_trace()                                       
-for b in train_dataloader:
-    print(b)
+#         # test_dataloader = DataLoader(test_dataset, batch_size=args.bsize, shuffle=False,
+#                                     #  num_workers=6, drop_last=True)
+
+try:
+    for batch in train_dataloader:
+        print(batch)
+except Exception as err:
+    print(Exception, err)
+        
