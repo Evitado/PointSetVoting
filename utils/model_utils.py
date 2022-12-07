@@ -151,7 +151,7 @@ def augment_transforms(args):
         transform.append(T.FixedPoints(args.num_pts))
     # Modelnet
     if args.task == 'classification':
-        transform.append(T.SamplePoints(args.num_pts))
+        transform.append(T.FixedPoints(args.num_pts))
 
     transform = T.Compose(transform)
     return pre_transform, transform

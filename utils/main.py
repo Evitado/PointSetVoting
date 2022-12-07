@@ -298,7 +298,7 @@ def load_dataset(args):
         train_dataset = EvitadoDataset('../data_root/evitado_data', train=True,
                                  pre_transform=pre_transform, transform=transform)
         test_dataset = EvitadoDataset('../data_root/evitado_data', train=False,
-                                 pre_transform=pre_transform, transform=T.SamplePoints(args.num_pts))
+                                 pre_transform=pre_transform, transform=T.FixedPoints(args.num_pts))
         train_dataloader = DataLoader(train_dataset, batch_size=args.bsize, shuffle=True,
                                       num_workers=6, drop_last=True)
         test_dataloader = DataLoader(test_dataset, batch_size=args.bsize, shuffle=False,
