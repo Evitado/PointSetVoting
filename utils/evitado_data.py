@@ -5,8 +5,8 @@ import open3d as o3d
 import numpy as np
 from torch_geometric.data import  InMemoryDataset, Data
 from torch_geometric.loader import  DataLoader
-from torch_geometric.io import read_ply
 import torch_geometric.transforms as T
+import json
 
 
 class EvitadoDataset(InMemoryDataset):
@@ -45,8 +45,9 @@ class EvitadoDataset(InMemoryDataset):
         torch.save(self.process_set('test'), self.processed_paths[1])
     
     def process_set(self, dataset):
-        categories = glob.glob(os.path.join(self.raw_dir, '*', ''))
-        categories = sorted([x.split(os.sep)[-2] for x in categories])
+        # categories = glob.glob(os.path.join(self.raw_dir, '*', ''))
+        # categories = sorted([x.split(os.sep)[-2] for x in categories])
+        categories = self.get_categories(dataset)
         
         data_list = []
         for target, category in enumerate(categories):
@@ -70,6 +71,13 @@ class EvitadoDataset(InMemoryDataset):
             
         return self.collate(data_list)
     
+    def get_categories(self, split):
+        f = open(self.raw_dir + '/' + 'split.json')
+        data = json.load(f)
+        f.close()
+        return data[split]
+
+    
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({len(self)})'
 
@@ -77,4 +85,7 @@ class EvitadoDataset(InMemoryDataset):
 # train_dataset = EvitadoDataset('../data_root/evitado_data', train=True, pre_transform=T.NormalizeScale(),transform=T.FixedPoints(1024))
 
 # train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True, num_workers=1, drop_last=True)
-        
+
+
+
+    
