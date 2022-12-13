@@ -30,14 +30,41 @@ class EvitadoDataset(InMemoryDataset):
     def raw_file_names(self):
         # If the strings are not present in the raw data folder  it looks to download
         return [
-                '737_500',
-                '737_800',
-                '747_400',
-                '757_200',
-                '767_300',
-                '777_200',
-                '777_300',
-                'a330_300']
+                "737_500",
+                "737_800",
+                "737_max8",
+                "747_400",
+                "757_200",
+                "767_300",
+                "777_200",
+                "777_300",
+                "777_f",
+                "a300_600",
+                "a319_ceo",
+                "a320",
+                "a321",
+                "a330_200",
+                "a330_300",
+                "a340_600",
+                "a350_900",
+                "a380_800",
+                "ch_47",
+                "citation",
+                "e190",
+                "f16",
+                "falcon_900",
+                "global",
+                "gulfstream",
+                "legacy500",
+                "md_11",
+                "nh90",
+                "pa34_seneca",
+                "phenom300",
+                "piaggio_p180",
+                "pilatus_pc12",
+                "premier_1",
+                "tbm"
+                ]
 
     @property
     def processed_file_names(self):
@@ -51,6 +78,7 @@ class EvitadoDataset(InMemoryDataset):
         # categories = glob.glob(os.path.join(self.raw_dir, '*', ''))
         # categories = sorted([x.split(os.sep)[-2] for x in categories])
         categories = self.get_categories(dataset)
+        import ipdb; ipdb.set_trace()
         
         data_list = []
         for target, category in enumerate(categories):
@@ -76,6 +104,7 @@ class EvitadoDataset(InMemoryDataset):
     
     def get_categories(self, split):
         f = open(self.raw_dir + '/' + self.split_file)
+        print(self.raw_dir + '/' + self.split_file)
         data = json.load(f)
         f.close()
         return data[split]
@@ -115,13 +144,15 @@ def visualize_point_cloud(points, color='r'):
 
 # Run the below code to visualise the data
 
-# train_dataset = EvitadoDataset('../data_root/evitado_data', train=True, pre_transform=T.NormalizeScale(),transform=T.FixedPoints(1024))
+train_dataset = EvitadoDataset('../data_root/evitado_data_full', train=True, pre_transform=T.NormalizeScale(),transform=T.FixedPoints(1024), split_file='split.json')
+import ipdb; ipdb.set_trace()
+
 # for i in train_dataset:
 #     pcl = visualize_point_cloud(i.pos.numpy())
 #     o3d.visualization.draw_geometries([pcl])
     
-# test_dataset = EvitadoDataset('../data_root/evitado_data', train=False,
-#                                  pre_transform=T.NormalizeScale(), transform=T.FixedPoints(1024), split_file='split.json')
+test_dataset = EvitadoDataset('../data_root/evitado_data_full', train=False,
+                                 pre_transform=T.NormalizeScale(), transform=T.FixedPoints(1024), split_file='split.json')
 # test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False,num_workers=1, drop_last=True)
 
 # from model_utils import simulate_partial_point_clouds
