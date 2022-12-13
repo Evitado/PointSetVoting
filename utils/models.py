@@ -18,6 +18,7 @@ class Model(torch.nn.Module):
         num_vote_test: int, the number of votes during test
         is_vote: bool, enable voting strategy
         task: string, [segmentation, classification, completion]
+        class_scores: to deal with unbalanced data.
     """
 
     def __init__(
@@ -30,6 +31,7 @@ class Model(torch.nn.Module):
             num_contrib_vote_train,
             num_vote_test,
             is_vote,
+            class_frequency,
             task
         ):
         super(Model, self).__init__()
@@ -39,6 +41,7 @@ class Model(torch.nn.Module):
         self.is_vote = is_vote
         self.task = task
         self.bottleneck = bottleneck
+        self.class_scores = 1/class_frequency
 
         ratio_train = num_vote_train / num_pts
         ratio_test = num_vote_test / num_pts_observed
@@ -50,7 +53,7 @@ class Model(torch.nn.Module):
         if task == 'completion':
             self.decoder = FoldingBasedDecoder(bottleneck)
         if task == 'classification':
-            self.decoder = Classifier(bottleneck, 40)
+            self.decoder = Classifier(bottleneck, len(self.class_scores))
         if task == 'segmentation':
             self.decoder = Segmentator(bottleneck, 50)
 
@@ -90,7 +93,8 @@ class Model(torch.nn.Module):
             if self.task == 'completion':
                 loss = chamfer_loss(pred, label.view(pred.size(0), -1, 3))
             elif self.task == 'classification':
-                loss = F.nll_loss(pred, label, reduction='none')
+                # import ipdb; ipdb.set_trace()
+                loss = F.nll_loss(pred, label,weight=self.class_scores.cuda(),reduction='none')
             elif self.task == 'segmentation':
                 loss = F.nll_loss(pred, label, reduction='none')
             else:

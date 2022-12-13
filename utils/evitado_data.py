@@ -14,10 +14,12 @@ class EvitadoDataset(InMemoryDataset):
         self,
         root,
         train = True,
+        split_file = 'split.json',
         transform= None,
         pre_transform= None,
         pre_filter= None
     ):
+        self.split_file = split_file
         super().__init__(root, transform, pre_transform, pre_filter)
         path = self.processed_paths[0] if train else self.processed_paths[1]
         self.data, self.slices = torch.load(path)
@@ -26,6 +28,7 @@ class EvitadoDataset(InMemoryDataset):
 
     @property
     def raw_file_names(self):
+        # If the strings are not present in the raw data folder  it looks to download
         return [
                 '737_500',
                 '737_800',
@@ -72,20 +75,60 @@ class EvitadoDataset(InMemoryDataset):
         return self.collate(data_list)
     
     def get_categories(self, split):
-        f = open(self.raw_dir + '/' + 'split.json')
+        f = open(self.raw_dir + '/' + self.split_file)
         data = json.load(f)
         f.close()
         return data[split]
 
+    # def get_class_weights(self):
+    #     """This function can be used in training to get the class weights
+        
+    #     """
     
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({len(self)})'
 
-        
+
+                 
+
+
+
+
+def visualize_point_cloud(points, color='r'):
+    '''
+    points: (N, 3)
+    color: string, ['r', 'g']
+    '''
+    colors = np.zeros(points.shape, dtype=np.double)
+    if color=='r':
+        colors[:, 0] = 1    # red
+    elif color=='g':
+        colors[:, 1] = 1    # green
+    elif color=='b':
+        colors[:, 2] = 1    # blue
+
+    point_cloud = o3d.geometry.PointCloud()
+    point_cloud.points = o3d.utility.Vector3dVector(points)
+    point_cloud.colors = o3d.utility.Vector3dVector(colors)
+    return point_cloud
+
+
+# Run the below code to visualise the data
+
 # train_dataset = EvitadoDataset('../data_root/evitado_data', train=True, pre_transform=T.NormalizeScale(),transform=T.FixedPoints(1024))
-
-# train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True, num_workers=1, drop_last=True)
-
-
-
+# for i in train_dataset:
+#     pcl = visualize_point_cloud(i.pos.numpy())
+#     o3d.visualization.draw_geometries([pcl])
     
+# test_dataset = EvitadoDataset('../data_root/evitado_data', train=False,
+#                                  pre_transform=T.NormalizeScale(), transform=T.FixedPoints(1024), split_file='split.json')
+# test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False,num_workers=1, drop_last=True)
+
+# from model_utils import simulate_partial_point_clouds
+
+# for j, data in enumerate(test_dataloader, 0):
+#         # data = data.to(device)
+#         data_observed = simulate_partial_point_clouds(data, 512, "classification")
+#         pos_observed, batch_observed, label_observed = data_observed.pos, data_observed.batch, data_observed.y
+#         pcl = visualize_point_cloud(pos_observed.numpy())
+#         o3d.visualization.draw_geometries([pcl])

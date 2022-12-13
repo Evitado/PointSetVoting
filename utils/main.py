@@ -59,7 +59,7 @@ def train_one_epoch(args, loader, optimizer, logger, epoch):
         optimizer.step()
 
         # write summary
-        if i % 100 == 0:
+        if i % 2 == 0:
             for item in loss_summary:
                 logger.add_scalar(item, loss_summary[item], i)
             logger.add_scalar('lr', get_lr(optimizer), i)
@@ -92,7 +92,11 @@ def test_one_epoch(args, loader, logger, epoch):
             results.append(loss)
 
         elif args.task == 'classification':
+            # import ipdb; ipdb.set_trace()
+            
             pred = pred.max(1)[1]
+            # print(f"predition is:{pred}")
+            # print(f"label is:{label}")
             results.append(pred.eq(label).float())
 
         elif args.task == 'segmentation':
@@ -109,8 +113,11 @@ def test_one_epoch(args, loader, logger, epoch):
         results = -results
 
     elif args.task == 'classification':
+        # import ipdb; ipdb.set_trace()
+        
         results = torch.cat(results, dim=0).mean().item()
         logger.add_scalar('test_acc', results, epoch)
+        
         print('Epoch: {:03d}, Test Acc: {:.4f}'.format(epoch, results))
 
     elif args.task == 'segmentation':
@@ -295,15 +302,14 @@ def load_dataset(args):
     elif args.task == 'classification':
         pre_transform, transform = augment_transforms(args)
 
-        train_dataset = EvitadoDataset('../data_root/evitado_data', train=True,
-                                 pre_transform=pre_transform, transform=transform)
-        test_dataset = EvitadoDataset('../data_root/evitado_data', train=False,
-                                 pre_transform=pre_transform, transform=T.FixedPoints(args.num_pts))
+        train_dataset = EvitadoDataset(args.dataset_path, train=True,
+                                 pre_transform=pre_transform, transform=transform, split_file=args.split_file)
+        test_dataset = EvitadoDataset(args.dataset_path, train=False,
+                                 pre_transform=pre_transform, transform=T.FixedPoints(args.num_pts), split_file=args.split_file)
         train_dataloader = DataLoader(train_dataset, batch_size=args.bsize, shuffle=True,
                                       num_workers=6, drop_last=True)
         test_dataloader = DataLoader(test_dataset, batch_size=args.bsize, shuffle=False,
                                      num_workers=6, drop_last=True)
-
     # load completion3D dataset
     elif args.task == 'completion':
         pre_transform, transform = augment_transforms(args)
@@ -320,7 +326,19 @@ def load_dataset(args):
 
     return train_dataloader, test_dataloader
 
-
+def get_class_frequency(dataset, train=False):
+        """
+        This function can be used in training to get the class weights
+        to deal with class imbalance
+        """
+        if train:
+            categories = dataset.data.y
+            _, class_frequency = np.array(np.unique(categories, return_counts=True), dtype=np.double)
+            return torch.from_numpy(class_frequency)
+        else:
+            class_frequency = torch.ones(dataset.num_classes)
+            return class_frequency
+                                         
 def check_overwrite(model_name):
     check_dir = 'checkpoint/{}'.format(model_name)
     log_dir = 'logs/{}'.format(model_name)
@@ -410,12 +428,18 @@ if __name__ == '__main__':
                         help="flag for writing prediction results")
     parser.add_argument("--checkpoint", type=str,
                         help="directory which contains pretrained model (.pth)")
+    parser.add_argument("--split_file", type=str,
+                        help=" split file in the dataset to split into train and test")
+    parser.add_argument("--dataset_path", type=str,
+                        help="Full path to the dataset")
 
     args = parser.parse_args()
     assert args.task in ['completion', 'classification', 'segmentation']
 
     # construct data loader
     train_dataloader, test_dataloader = load_dataset(args)
+    # get class frequency
+    class_frequency = get_class_frequency(train_dataloader.dataset,train=True)
 
     model = Model(
         radius=args.radius,
@@ -426,6 +450,7 @@ if __name__ == '__main__':
         num_contrib_vote_train=args.num_contrib_vote_train,
         num_vote_test=args.num_vote_test,
         is_vote=args.is_vote,
+        class_frequency = class_frequency,
         task=args.task
     )
 
@@ -451,6 +476,7 @@ if __name__ == '__main__':
         evaluate(args=args, loader=test_dataloader, save_dir=save_dir)
 
     # training
-    else:
+    else:    
+        print(model)  
         train(args=args, train_dataloader=train_dataloader, test_dataloader=test_dataloader)
         print('Training is done: {}'.format(args.model_name))
