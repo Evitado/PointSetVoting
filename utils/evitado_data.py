@@ -78,13 +78,13 @@ class EvitadoDataset(InMemoryDataset):
         # categories = glob.glob(os.path.join(self.raw_dir, '*', ''))
         # categories = sorted([x.split(os.sep)[-2] for x in categories])
         categories = self.get_categories(dataset)
-        import ipdb; ipdb.set_trace()
         
         data_list = []
+        path_list= []
         for target, category in enumerate(categories):
             print(target, category)
             folder = os.path.join(self.raw_dir,category,dataset)
-            paths = glob.glob(f'{folder}/{category}*.ply')
+            paths = glob.glob(f'{folder}/{category}*.p*')
             for path in paths:                                       
                 pcd = o3d.io.read_point_cloud(path)
                 pos = torch.from_numpy(np.asarray(pcd.points)) 
@@ -93,13 +93,14 @@ class EvitadoDataset(InMemoryDataset):
                 data = Data(pos=pos.double(), face=None)
                 data.y = torch.tensor([target])
                 data_list.append(data)
+                path_list.append(path)
                 
         if self.pre_filter is not None:
             data_list = [d for d in data_list if self.pre_filter(d)]
 
         if self.pre_transform is not None:
             data_list = [self.pre_transform(d) for d in data_list]
-            
+         
         return self.collate(data_list)
     
     def get_categories(self, split):
@@ -109,10 +110,6 @@ class EvitadoDataset(InMemoryDataset):
         f.close()
         return data[split]
 
-    # def get_class_weights(self):
-    #     """This function can be used in training to get the class weights
-        
-    #     """
     
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({len(self)})'
@@ -144,15 +141,14 @@ def visualize_point_cloud(points, color='r'):
 
 # Run the below code to visualise the data
 
-train_dataset = EvitadoDataset('../data_root/evitado_data_full', train=True, pre_transform=T.NormalizeScale(),transform=T.FixedPoints(1024), split_file='split.json')
-import ipdb; ipdb.set_trace()
+# train_dataset = EvitadoDataset('../data_root/evitado_data_full', train=True, pre_transform=T.NormalizeScale(),transform=T.FixedPoints(1024), split_file='split.json')
 
 # for i in train_dataset:
 #     pcl = visualize_point_cloud(i.pos.numpy())
 #     o3d.visualization.draw_geometries([pcl])
     
-test_dataset = EvitadoDataset('../data_root/evitado_data_full', train=False,
-                                 pre_transform=T.NormalizeScale(), transform=T.FixedPoints(1024), split_file='split.json')
+# test_dataset = EvitadoDataset('../data_root/evitado_data_full', train=False,
+                                #  pre_transform=T.NormalizeScale(), transform=T.FixedPoints(1024), split_file='split.json')
 # test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False,num_workers=1, drop_last=True)
 
 # from model_utils import simulate_partial_point_clouds
