@@ -440,7 +440,6 @@ if __name__ == '__main__':
     train_dataloader, test_dataloader = load_dataset(args)
     # get class frequency
     class_frequency = get_class_frequency(train_dataloader.dataset,train=True)
-
     model = Model(
         radius=args.radius,
         bottleneck=args.bottleneck,
